@@ -566,13 +566,30 @@ async function sendMsg(){
   if(c&&c.title==='New chat'&&text){c.title=text.slice(0,38)+(text.length>38?'…':'');document.getElementById('chat-disp').textContent=c.title;}
   save();renderSidebar('');showTyping();
   try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:'You are a powerful AI assistant that can help with absolutely anything — answering questions, writing, coding, math, science, image analysis, translation, brainstorming, and more. Be helpful, clear, and friendly.',messages:histMap[activeId].map(m=>({role:m.role,content:m.content}))})});
-    const data=await res.json();rmTyping();
-    const reply=data.content?.map(b=>b.text||'').join('')||'Sorry, something went wrong.';
-    addMsg('ai',reply);histMap[activeId].push({role:'assistant',content:reply});save();
-  }catch(e){rmTyping();addMsg('ai','Connection error. Please try again.');}
-  busy=false;document.getElementById('send-btn').disabled=false;inp.focus();
-}
+   const res = await fetch('https://api.anthropic.com/v1/messages', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'x-api-key': 'YOUR_ANTHROPIC_API_KEY',
+    'anthropic-version': '2023-06-01'
+  },
+  body: JSON.stringify({
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 1000,
+    system: 'You are a powerful AI assistant that can help with absolutely anything — answering questions, writing, coding, math, science, image analysis, translation, brainstorming, and more. Be helpful, clear, and friendly.',
+    messages: histMap[activeId].map(m => ({
+      role: m.role,
+      content: m.content
+    }))
+  })
+});
+
+if (!res.ok) {
+  const errorText = await res.text();
+  throw new Error(errorText);}
+
+const data = await res.json();
+  }
 
 // ─── MODALS ───
 function openOverlay(id){document.getElementById(id).classList.add('open');}
